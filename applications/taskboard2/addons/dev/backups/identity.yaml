@@ -1,0 +1,13 @@
+apiVersion: seaweed.seaweedfs.com/v1
+kind: S3Identity
+metadata:
+  name: taskboard2-backups
+  labels:
+    app.kubernetes.io/name: backups
+    app.kubernetes.io/part-of: taskboard2
+    app.kubernetes.io/managed-by: gitops-app
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
+spec:
+  seaweedRef:
+    name: taskboard2-backups

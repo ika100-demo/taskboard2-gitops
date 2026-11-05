@@ -64,6 +64,7 @@ components:
       host: taskboard2-api
     uses:
       - postgres
+      - backups
   taskboard2-web:
     type: website
     lang: typescript
@@ -104,3 +105,7 @@ resources:
       prod:
         replicas: 3
         storage: 20Gi
+  backups:
+    type: bucket
+    storage: 10Gi
+    versioning: false
