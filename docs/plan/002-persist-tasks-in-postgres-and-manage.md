@@ -3,59 +3,84 @@ plan_id: 002-persist-tasks-in-postgres-and-manage
 spec: 002-persist-tasks-in-postgres-and-manage
 feature: Persist tasks of taskboard2-api in Postgres and list and create them in the taskboard2-web UI
 gitops_app: ika100-demo/taskboard2-gitops
-status: draft
+status: completed
 repos:
-  - id: taskboard2-gitops
-    shape: gitops-app
-    summary: Declare the postgres resource, wire it into taskboard2-api and point taskboard2-web at the API in-cluster
-    acs: [AC-002.1, AC-002.3, AC-002.4, AC-002.12]
-    gitops:
-      - {resource: postgres}
-      - {uses: postgres, component: taskboard2-api}
-      - {expose: taskboard2-api, host: taskboard2-api}
-      - {expose: taskboard2-web, host: taskboard2-web}
-      - {env: {TASKBOARD2_API_URL: 'http://taskboard2-api'}, component: taskboard2-web}
-    arguments: |
-      Smoke checks: none of its own; verified through the smoke runs of both component repos after Argo reconciles
-      (see "gitops-app PR" in the system plan). Both components stay exposed in dev; dev keeps replicas: 1.
-    depends_on: []
-    done: false
-  - id: taskboard2-api
-    shape: service-python
-    summary: Persist tasks in Postgres behind the existing TaskStore, answering 503 when the database is down
-    acs: [AC-002.1, AC-002.2, AC-002.3, AC-002.4, AC-002.5, AC-002.6]
-    arguments: |
-      Smoke checks: mark AC-002.6 as a smoke criterion: the existing smoke checks of AC-001.1, AC-001.2, AC-001.3,
-      AC-001.7 and AC-001.10 keep running against the public URL (dev: http://taskboard2-api.taskboard2-dev.localhost:8088)
-      and now go through Postgres. AC-002.1, AC-002.2, AC-002.3, AC-002.4 and AC-002.5 are in-process tests only
-      (they need a restart, two app instances, an empty database or a database that is down); the dev store is
-      shared and never empty, so smoke tests keep finding their own task by id.
-      Implementation: swap InMemoryTaskStore for a PostgresTaskStore in create_app() (spec 001 design.md planned this);
-      the router and schemas stay. Config from DATABASE_URL (set by the platform, ADR-057); without DATABASE_URL the app
-      keeps the in-memory store so the existing in-process tests and local runs work. Driver: psycopg 3 with
-      psycopg_pool (add through the repo's devbox/uv recipe, lockfile updated). Schema and ordering under "Contract".
-      Tests against a real Postgres (testcontainers in `devbox run test`; GitHub runners have Docker), with a fresh
-      database per test; a database that is down is simulated by stopping the container or using an unreachable port.
-    depends_on: [taskboard2-gitops]
-    done: false
-  - id: taskboard2-web
-    shape: web-nextjs
-    summary: List tasks and create them with a form on the root page, calling taskboard2-api server-side
-    acs: [AC-002.7, AC-002.8, AC-002.9, AC-002.10, AC-002.11, AC-002.12]
-    arguments: |
-      Smoke checks: mark AC-002.7, AC-002.9, AC-002.10 and AC-002.12 as smoke criteria (`@smoke` Playwright tests,
-      `SMOKE_BASE_URL` = the web app's public URL, dev: http://taskboard2-web.taskboard2-dev.localhost:8088). They use
-      only the web URL: create a task through the form with a unique title (and a due date), see it at the end of the
-      list with its date as YYYY-MM-DD, reload and still see it (the server-side list comes from GET /tasks); submit an
-      empty title and see the field error with no task added; assert that no browser request goes to a host other
-      than the web app's (AC-002.12). Never assume an empty list (dev is shared). AC-002.8 and AC-002.11 are
-      in-process / local e2e only (they need an empty or unreachable API): Vitest with a mocked fetch, and Playwright
-      e2e against a small stub API started by the e2e setup.
-      Replaces the template home page (feature cards) with the task page; keep layout, header, footer and the
-      /api/health, /api/ready, /api/metrics routes. Document TASKBOARD2_API_URL in docs/env-vars.md (server-only,
-      never NEXT_PUBLIC_). The page is dynamic (no static prerender, no fetch cache).
-    depends_on: [taskboard2-gitops]
-    done: false
+- id: taskboard2-gitops
+  shape: gitops-app
+  summary: Declare the postgres resource, wire it into taskboard2-api and point taskboard2-web at the
+    API in-cluster
+  acs:
+  - AC-002.1
+  - AC-002.3
+  - AC-002.4
+  - AC-002.12
+  gitops:
+  - resource: postgres
+  - uses: postgres
+    component: taskboard2-api
+  - expose: taskboard2-api
+    host: taskboard2-api
+  - expose: taskboard2-web
+    host: taskboard2-web
+  - env:
+      TASKBOARD2_API_URL: http://taskboard2-api
+    component: taskboard2-web
+  arguments: |
+    Smoke checks: none of its own; verified through the smoke runs of both component repos after Argo reconciles
+    (see "gitops-app PR" in the system plan). Both components stay exposed in dev; dev keeps replicas: 1.
+  depends_on: []
+  done: true
+- id: taskboard2-api
+  shape: service-python
+  summary: Persist tasks in Postgres behind the existing TaskStore, answering 503 when the database is
+    down
+  acs:
+  - AC-002.1
+  - AC-002.2
+  - AC-002.3
+  - AC-002.4
+  - AC-002.5
+  - AC-002.6
+  arguments: |
+    Smoke checks: mark AC-002.6 as a smoke criterion: the existing smoke checks of AC-001.1, AC-001.2, AC-001.3,
+    AC-001.7 and AC-001.10 keep running against the public URL (dev: http://taskboard2-api.taskboard2-dev.localhost:8088)
+    and now go through Postgres. AC-002.1, AC-002.2, AC-002.3, AC-002.4 and AC-002.5 are in-process tests only
+    (they need a restart, two app instances, an empty database or a database that is down); the dev store is
+    shared and never empty, so smoke tests keep finding their own task by id.
+    Implementation: swap InMemoryTaskStore for a PostgresTaskStore in create_app() (spec 001 design.md planned this);
+    the router and schemas stay. Config from DATABASE_URL (set by the platform, ADR-057); without DATABASE_URL the app
+    keeps the in-memory store so the existing in-process tests and local runs work. Driver: psycopg 3 with
+    psycopg_pool (add through the repo's devbox/uv recipe, lockfile updated). Schema and ordering under "Contract".
+    Tests against a real Postgres (testcontainers in `devbox run test`; GitHub runners have Docker), with a fresh
+    database per test; a database that is down is simulated by stopping the container or using an unreachable port.
+  depends_on:
+  - taskboard2-gitops
+  done: true
+- id: taskboard2-web
+  shape: web-nextjs
+  summary: List tasks and create them with a form on the root page, calling taskboard2-api server-side
+  acs:
+  - AC-002.7
+  - AC-002.8
+  - AC-002.9
+  - AC-002.10
+  - AC-002.11
+  - AC-002.12
+  arguments: |
+    Smoke checks: mark AC-002.7, AC-002.9, AC-002.10 and AC-002.12 as smoke criteria (`@smoke` Playwright tests,
+    `SMOKE_BASE_URL` = the web app's public URL, dev: http://taskboard2-web.taskboard2-dev.localhost:8088). They use
+    only the web URL: create a task through the form with a unique title (and a due date), see it at the end of the
+    list with its date as YYYY-MM-DD, reload and still see it (the server-side list comes from GET /tasks); submit an
+    empty title and see the field error with no task added; assert that no browser request goes to a host other
+    than the web app's (AC-002.12). Never assume an empty list (dev is shared). AC-002.8 and AC-002.11 are
+    in-process / local e2e only (they need an empty or unreachable API): Vitest with a mocked fetch, and Playwright
+    e2e against a small stub API started by the e2e setup.
+    Replaces the template home page (feature cards) with the task page; keep layout, header, footer and the
+    /api/health, /api/ready, /api/metrics routes. Document TASKBOARD2_API_URL in docs/env-vars.md (server-only,
+    never NEXT_PUBLIC_). The page is dynamic (no static prerender, no fetch cache).
+  depends_on:
+  - taskboard2-gitops
+  done: true
 gitops_pin: []
 ---
 
