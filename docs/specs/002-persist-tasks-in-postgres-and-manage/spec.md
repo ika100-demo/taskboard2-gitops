@@ -1,7 +1,7 @@
 ---
 spec_id: 002-persist-tasks-in-postgres-and-manage
 title: Persist tasks in Postgres and manage them in the web UI
-status: approved
+status: done
 priority: P1
 shape: gitops-app
 ---
@@ -66,3 +66,5 @@ Web UI:
 - 2026-11-05 created
 - 2026-11-05 amended: answered open questions
 - 2026-11-05 approved
+- 2026-11-05 building
+- 2026-11-05 done

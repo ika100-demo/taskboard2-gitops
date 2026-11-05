@@ -7,4 +7,5 @@ One line per feature spec; the specs live in `docs/specs/`.
 | Spec | Priority | Status | Criteria | Tracks |
 |---|---|---|---|---|
 | [001-create-and-list-tasks](specs/001-create-and-list-tasks/spec.md) — Create and list tasks | P1 | done | 12 |  |
+| [002-persist-tasks-in-postgres-and-manage](specs/002-persist-tasks-in-postgres-and-manage/spec.md) — Persist tasks in Postgres and manage them in the web UI | P1 | done | 12 |  |
 <!-- spec-index:end -->
