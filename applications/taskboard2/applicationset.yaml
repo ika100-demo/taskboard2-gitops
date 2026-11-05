@@ -66,7 +66,9 @@ metadata:
 spec:
   generators:
   - list:
-      elements: []
+      elements:
+      - name: taskboard2-api
+      - name: taskboard2-web
   template:
     metadata:
       name: '{{name}}-prod'
@@ -215,3 +217,39 @@ spec:
           selfHeal: true
         syncOptions:
         - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: taskboard2-addons-prod
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - name: backups
+      - name: postgres
+  template:
+    metadata:
+      name: addon-{{name}}-prod
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ika100-demo/taskboard2-gitops
+        targetRevision: main
+        path: applications/taskboard2/addons/prod/{{name}}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: taskboard2-prod
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        retry:
+          limit: 10
+          backoff:
+            duration: 30s
+            factor: 2
+            maxDuration: 10m
