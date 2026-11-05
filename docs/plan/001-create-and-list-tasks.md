@@ -3,23 +3,35 @@ plan_id: 001-create-and-list-tasks
 spec: 001-create-and-list-tasks
 feature: Create and list tasks in memory through POST /tasks and GET /tasks of taskboard2-api
 gitops_app: ika100-demo/taskboard2-gitops
-status: draft
+status: completed
 repos:
-  - id: taskboard2-api
-    shape: service-python
-    summary: Create and list in-memory tasks via POST /tasks and GET /tasks
-    acs: [AC-001.1, AC-001.2, AC-001.3, AC-001.4, AC-001.5, AC-001.6, AC-001.7, AC-001.8, AC-001.9, AC-001.10, AC-001.11, AC-001.12]
-    arguments: |
-      Smoke checks: mark AC-001.1, AC-001.2, AC-001.3, AC-001.7 and AC-001.10 as smoke criteria; they can be
-      checked through the public URL (`@pytest.mark.smoke`, `SMOKE_BASE_URL`, like tests/test_smoke_health.py).
-      The dev deployment is shared and keeps its tasks between smoke runs, so a smoke test never assumes an
-      empty list: it finds the task it created by `id`, and for a 422 it checks that the list length did not
-      grow from its own request. AC-001.4, AC-001.5, AC-001.6, AC-001.8, AC-001.9, AC-001.11 and AC-001.12 are
-      in-process tests only (they need a fresh store, a restart or exact ordering on an empty list).
-      Storage: a process-local, in-memory store (list in insertion order) behind a small interface, created
-      in the app factory so each test app and each restart starts empty. No database, no new env vars.
-    depends_on: []
-    done: false
+- id: taskboard2-api
+  shape: service-python
+  summary: Create and list in-memory tasks via POST /tasks and GET /tasks
+  acs:
+  - AC-001.1
+  - AC-001.2
+  - AC-001.3
+  - AC-001.4
+  - AC-001.5
+  - AC-001.6
+  - AC-001.7
+  - AC-001.8
+  - AC-001.9
+  - AC-001.10
+  - AC-001.11
+  - AC-001.12
+  arguments: |
+    Smoke checks: mark AC-001.1, AC-001.2, AC-001.3, AC-001.7 and AC-001.10 as smoke criteria; they can be
+    checked through the public URL (`@pytest.mark.smoke`, `SMOKE_BASE_URL`, like tests/test_smoke_health.py).
+    The dev deployment is shared and keeps its tasks between smoke runs, so a smoke test never assumes an
+    empty list: it finds the task it created by `id`, and for a 422 it checks that the list length did not
+    grow from its own request. AC-001.4, AC-001.5, AC-001.6, AC-001.8, AC-001.9, AC-001.11 and AC-001.12 are
+    in-process tests only (they need a fresh store, a restart or exact ordering on an empty list).
+    Storage: a process-local, in-memory store (list in insertion order) behind a small interface, created
+    in the app factory so each test app and each restart starts empty. No database, no new env vars.
+  depends_on: []
+  done: true
 gitops_pin: []
 ---
 

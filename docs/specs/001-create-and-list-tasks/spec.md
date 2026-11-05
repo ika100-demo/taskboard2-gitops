@@ -1,7 +1,7 @@
 ---
 spec_id: 001-create-and-list-tasks
 title: Create and list tasks
-status: approved
+status: done
 priority: P1
 shape: gitops-app
 ---
@@ -57,3 +57,5 @@ As a user of the taskboard2 API, I want to list all tasks I created, so that I c
 - 2026-11-05 created
 - 2026-11-05 amended: answered open questions; removed smoke markers (not supported for gitops-app)
 - 2026-11-05 approved
+- 2026-11-05 building
+- 2026-11-05 done
