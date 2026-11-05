@@ -8,6 +8,7 @@ spec:
   - list:
       elements:
       - name: taskboard2-api
+      - name: taskboard2-web
   template:
     metadata:
       name: '{{name}}-dev'
